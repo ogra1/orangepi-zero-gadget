@@ -1,0 +1,34 @@
+name: orangepi-zero
+version: 16-0.1
+summary: Orange Pi Zero
+description: |
+ Bootloader files and partitoning data to create a
+ bootable Ubuntu Core image for the Orange Pi Zero.
+type: gadget
+architectures:
+  - armhf
+confinement: strict
+grade: stable
+
+parts:
+  uboot:
+    plugin: make
+    source: git://git.denx.de/u-boot.git
+    source-branch: v2017.05
+    artifacts: [u-boot-sunxi-with-spl.bin]
+    prepare: |
+      git apply ../../../uboot.patch
+      make orangepi_zero_defconfig
+    build: |
+      CROSS_COMPILE=arm-linux-gnueabi- make
+    install: |
+      cp u-boot-sunxi-with-spl.bin $SNAPCRAFT_PART_INSTALL/
+      tools/mkenvimage -r -s 131072 -o $SNAPCRAFT_PART_INSTALL/uboot.env ../../../uboot.env.in
+      cd $SNAPCRAFT_PART_INSTALL/; ln -s uboot.env uboot.conf
+    build-packages:
+      - libpython2.7-dev
+      - build-essential
+      - bc
+      - gcc-arm-linux-gnueabi
+      - device-tree-compiler
+      - python-minimal

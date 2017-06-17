@@ -1,0 +1,50 @@
+diff --git a/common/Kconfig b/common/Kconfig
+index 1879aefaf8..4f0d484d3e 100644
+--- a/common/Kconfig
++++ b/common/Kconfig
+@@ -164,7 +164,7 @@ if ARCH_SUNXI
+ 
+ choice
+ 	prompt "Environment Device"
+-	default ENV_IS_IN_MMC if ARCH_SUNXI
++	default ENV_IS_IN_FAT if ARCH_SUNXI
+ 
+ config ENV_IS_IN_MMC
+ 	bool "Environment in an MMC device"
+@@ -173,6 +173,13 @@ config ENV_IS_IN_MMC
+ 	  Define this if you have an MMC device which you want to use for the
+ 	  environment.
+ 
++config ENV_IS_IN_FAT
++	bool "Environment in an FAT device"
++	depends on CMD_FAT
++	help
++	  Define this if you have a FAT device which you want to use for the
++	  environment.
++
+ config ENV_IS_IN_NAND
+ 	bool "Environment in a NAND device"
+ 	depends on CMD_NAND
+diff --git a/include/configs/sunxi-common.h b/include/configs/sunxi-common.h
+index 64a190059a..d9cc396114 100644
+--- a/include/configs/sunxi-common.h
++++ b/include/configs/sunxi-common.h
+@@ -149,8 +149,18 @@
+ #define CONFIG_SYS_MMC_MAX_DEVICE	4
+ #elif defined(CONFIG_ENV_IS_NOWHERE)
+ #define CONFIG_ENV_SIZE			(128 << 10)
++#elif defined(CONFIG_ENV_IS_IN_FAT)
++#undef  CONFIG_ENV_SIZE
++#define CONFIG_FAT_WRITE
++#define CONFIG_ENV_SIZE			(128 * 1024)
++#define FAT_ENV_DEVICE_AND_PART         "0:1"
++#define FAT_ENV_INTERFACE               "mmc"
++#define FAT_ENV_FILE                    "uboot.env"
++#define CONFIG_SYS_REDUNDAND_ENVIRONMENT
+ #endif
+ 
++#define CONFIG_SUPPORT_RAW_INITRD
++
+ #ifndef CONFIG_MACH_SUN8I_V3S
+ /* 64MB of malloc() pool */
+ #define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + (64 << 20))
