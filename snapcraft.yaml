@@ -19,16 +19,12 @@ parts:
     prepare: |
       git apply ../../../uboot.patch
       make orangepi_zero_defconfig
-    build: |
-      CROSS_COMPILE=arm-linux-gnueabi- make
     install: |
-      cp u-boot-sunxi-with-spl.bin $SNAPCRAFT_PART_INSTALL/
       tools/mkenvimage -r -s 131072 -o $SNAPCRAFT_PART_INSTALL/uboot.env ../../../uboot.env.in
       cd $SNAPCRAFT_PART_INSTALL/; ln -s uboot.env uboot.conf
     build-packages:
       - libpython2.7-dev
       - build-essential
       - bc
-      - gcc-arm-linux-gnueabi
       - device-tree-compiler
       - python-minimal

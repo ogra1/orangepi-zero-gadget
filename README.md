@@ -19,16 +19,16 @@ has a hard requirement on gcc6!*
 
 ### Natively on armhf
 
-Create an artful (17.10) chroot, install snapcraft and git inside it, clone this
-tree.
+Create an artful (17.10) chroot, install snapcraft and git inside it, chroot into it
+and clone this tree.
 
 To build the gadget snap locally on a native armhf system just run `snapcraft`
 in the toplevel of the tree.
 
 ### Cross on x86 systems
 
-Create an artful (17.10) chroot, install snapcraft and git inside it, clone this
-tree.
+Create an artful (17.10) chroot, install snapcraft and git inside it, chroot into it
+and clone this tree.
 
 Copy the crossbuild-snapcraft.yaml over snapcraft.yaml and run `snapcraft`
 
