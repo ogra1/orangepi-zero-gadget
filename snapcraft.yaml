@@ -16,7 +16,7 @@ parts:
     source: git://git.denx.de/u-boot.git
     source-branch: v2017.05
     prepare: |
-      if gcc -v 2>&1|grep -q "version 6"; then
+      if ! gcc -v 2>&1|grep -q "version 6"; then
         echo "ERROR: This snap requires gcc6 to build, please use a"
         echo "ERROR: 17.10 (artful) chroot or container to build it."
         exit 1
