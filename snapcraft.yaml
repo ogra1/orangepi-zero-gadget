@@ -1,4 +1,4 @@
-name: orangepi-zero
+name: orangepi-zero-ogra
 version: 16-0.1
 summary: Orange Pi Zero
 description: |
@@ -15,11 +15,26 @@ parts:
     plugin: make
     source: git://git.denx.de/u-boot.git
     source-branch: v2017.05
-    artifacts: [u-boot-sunxi-with-spl.bin]
     prepare: |
+      if gcc -v 2>&1|grep -q "version 6"; then
+        echo "ERROR: This snap requires gcc6 to build, please use a"
+        echo "ERROR: 17.10 (artful) chroot or container to build it."
+        exit 1
+      fi
       git apply ../../../uboot.patch
       make orangepi_zero_defconfig
+    build: |
+      if [ "$(arch)" = "x86_64" ]; then
+        if [ ! -x /usr/bin/arm-linux-gnueabihf-gcc ]; then
+          echo "ERROR: You are cross building this snap, please install gcc-arm-linux-gnueabihf"
+          exit 1
+        fi
+        CROSS_COMPILE=arm-linux-gnueabihf- make
+      else
+        make
+      fi
     install: |
+      cp u-boot-sunxi-with-spl.bin $SNAPCRAFT_PART_INSTALL/
       tools/mkenvimage -r -s 131072 -o $SNAPCRAFT_PART_INSTALL/uboot.env ../../../uboot.env.in
       cd $SNAPCRAFT_PART_INSTALL/; ln -s uboot.env uboot.conf
     build-packages:
