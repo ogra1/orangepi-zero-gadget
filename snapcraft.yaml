@@ -12,28 +12,27 @@ grade: stable
 
 parts:
   uboot:
-    plugin: make
+    plugin: nil
     source: git://git.denx.de/u-boot.git
-    source-branch: v2017.05
-    prepare: |
-      if ! gcc -v 2>&1|grep -q "version 6"; then
-        echo "ERROR: This snap requires gcc6 to build, please use a"
-        echo "ERROR: 17.10 (artful) chroot or container to build it."
-        exit 1
-      fi
+    source-branch: v2018.05
+    override-build: |
       git apply ../../../uboot.patch
-      make orangepi_zero_defconfig
-    build: |
       if [ "$(arch)" = "x86_64" ]; then
-        if [ ! -x /usr/bin/arm-linux-gnueabihf-gcc ]; then
-          echo "ERROR: You are cross building this snap, please install gcc-arm-linux-gnueabihf"
-          exit 1
-        fi
-        CROSS_COMPILE=arm-linux-gnueabihf- make
+        TCHAINVER="$(wget -q -O - \
+                   https://releases.linaro.org/components/toolchain/binaries/latest/arm-linux-gnueabihf/| \
+                   html2text -width 200|grep 'x86_64_arm-linux-gnueabihf.tar.xz '|cut -d' ' -f2)"
+        wget https://releases.linaro.org/components/toolchain/binaries/latest/arm-linux-gnueabihf/$TCHAINVER
+        tar xf $TCHAINVER
+        mv $(echo $TCHAINVER|sed 's/.tar.xz$//') toolchain
+        CROSS_COMPILE=$(pwd)/toolchain/bin/arm-linux-gnueabihf- make orangepi_zero_defconfig
+      else
+        make orangepi_zero_defconfig
+      fi
+      if [ "$(arch)" = "x86_64" ]; then
+        CROSS_COMPILE=$(pwd)/toolchain/bin/arm-linux-gnueabihf- make
       else
         make
       fi
-    install: |
       cp u-boot-sunxi-with-spl.bin $SNAPCRAFT_PART_INSTALL/
       tools/mkenvimage -r -s 131072 -o $SNAPCRAFT_PART_INSTALL/uboot.env ../../../uboot.env.in
       cd $SNAPCRAFT_PART_INSTALL/; ln -s uboot.env uboot.conf
@@ -43,3 +42,15 @@ parts:
       - bc
       - device-tree-compiler
       - python-minimal
+  initrd-snippet:
+    source: .
+    plugin: nil
+    override-build: |
+      set -e
+      cd initrd && find . | cpio --quiet -o -H newc| lzma >>$SNAPCRAFT_PART_INSTALL/initrd-extra.img
+    build-packages:
+      - cpio
+      - findutils
+      - xz-utils
+      - on amd64 to armhf:
+        - gcc-arm-linux-gnueabihf:amd64

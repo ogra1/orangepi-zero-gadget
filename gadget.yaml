@@ -16,3 +16,6 @@ volumes:
         filesystem: vfat
         filesystem-label: system-boot
         size: 128M
+        content:
+          - source: initrd-extra.img
+            target: initrd-extra.img
