@@ -7,7 +7,7 @@ volumes:
     structure:
       - name: u-boot
         type: bare
-        size: 430080
+        size: 10485760
         offset: 8192
         content:
           - image: u-boot-sunxi-with-spl.bin
