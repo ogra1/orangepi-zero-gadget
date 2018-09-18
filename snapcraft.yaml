@@ -43,6 +43,7 @@ parts:
       - device-tree-compiler
       - html2text
       - python-minimal
+      - swig
       - wget
   initrd-snippet:
     source: .
