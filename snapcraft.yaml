@@ -41,7 +41,9 @@ parts:
       - build-essential
       - bc
       - device-tree-compiler
+      - html2text
       - python-minimal
+      - wget
   initrd-snippet:
     source: .
     plugin: nil
