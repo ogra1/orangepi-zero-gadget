@@ -13,10 +13,12 @@ esac
 
 SYSTEMDDIR="/root/writable/system-data/etc/systemd"
 JOBDIR="${SYSTEMDDIR}/system"
-SERVICENAME="getty@ttyGS0.service"
+SERVICENAME="serial-getty@ttyGS0.service"
 
 [ -e "/root/writable/system-data/etc/modules-load.d/gserial.conf" ] || \
        echo "g_serial" >/root/writable/system-data/etc/modules-load.d/gserial.conf
 
-[ -L "${JOBDIR}/getty.target.wants/${SERVICENAME}" ] || \
-       ln -s "/lib/systemd/system/getty@.service" "${JOBDIR}/getty.target.wants/${SERVICENAME}"
+if [ ! -L "${JOBDIR}/getty.target.wants/${SERVICENAME}" ]; then
+       cp /root/lib/systemd/system/serial-getty@.service ${JOBDIR}/${SERVICENAME}
+       ln -s /etc/systemd/system/${SERVICENAME} ${JOBDIR}/getty.target.wants/${SERVICENAME}
+fi
