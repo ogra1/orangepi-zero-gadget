@@ -5,8 +5,11 @@ description: |
  Bootloader files and partitoning data to create a
  bootable Ubuntu Core image for the Orange Pi Zero.
 type: gadget
+
 architectures:
-  - armhf
+  - build-on: amd64
+    run-on: armhf
+
 confinement: strict
 grade: stable
 
@@ -17,22 +20,14 @@ parts:
     source-branch: v2018.05
     override-build: |
       git apply ../../../uboot.patch
-      if [ "$(arch)" = "x86_64" ]; then
-        TCHAINVER="$(wget -q -O - \
-                   https://releases.linaro.org/components/toolchain/binaries/latest/arm-linux-gnueabihf/| \
-                   html2text -width 200|grep 'x86_64_arm-linux-gnueabihf.tar.xz '|cut -d' ' -f2)"
-        wget https://releases.linaro.org/components/toolchain/binaries/latest/arm-linux-gnueabihf/$TCHAINVER
-        tar xf $TCHAINVER
-        mv $(echo $TCHAINVER|sed 's/.tar.xz$//') toolchain
-        CROSS_COMPILE=$(pwd)/toolchain/bin/arm-linux-gnueabihf- make orangepi_zero_defconfig
-      else
-        make orangepi_zero_defconfig
-      fi
-      if [ "$(arch)" = "x86_64" ]; then
-        CROSS_COMPILE=$(pwd)/toolchain/bin/arm-linux-gnueabihf- make
-      else
-        make
-      fi
+      TCHAINVER="$(wget -q -O - \
+                 https://releases.linaro.org/components/toolchain/binaries/latest-7/arm-linux-gnueabihf/| \
+                 html2text -width 200|grep 'x86_64_arm-linux-gnueabihf.tar.xz '|cut -d' ' -f2)"
+      wget https://releases.linaro.org/components/toolchain/binaries/latest-7/arm-linux-gnueabihf/$TCHAINVER
+      tar xf $TCHAINVER
+      mv $(echo $TCHAINVER|sed 's/.tar.xz$//') toolchain
+      CROSS_COMPILE=$(pwd)/toolchain/bin/arm-linux-gnueabihf- make orangepi_zero_defconfig
+      CROSS_COMPILE=$(pwd)/toolchain/bin/arm-linux-gnueabihf- make
       cp u-boot-sunxi-with-spl.bin $SNAPCRAFT_PART_INSTALL/
       tools/mkenvimage -r -s 131072 -o $SNAPCRAFT_PART_INSTALL/uboot.env ../../../uboot.env.in
       cd $SNAPCRAFT_PART_INSTALL/; ln -s uboot.env uboot.conf
@@ -40,7 +35,9 @@ parts:
       - libpython2.7-dev
       - build-essential
       - bc
+      - bison
       - device-tree-compiler
+      - flex
       - html2text
       - python-minimal
       - swig
@@ -55,5 +52,4 @@ parts:
       - cpio
       - findutils
       - xz-utils
-      - on amd64 to armhf:
-        - gcc-arm-linux-gnueabihf:amd64
+      - gcc-arm-linux-gnueabihf
